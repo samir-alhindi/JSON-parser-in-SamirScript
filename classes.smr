@@ -1,0 +1,25 @@
+
+enum {
+    STRING,
+    NUMBER,
+    BOOLEAN,
+    NULL,
+    OBJECT,
+    ARRAY
+}
+
+class JsonValue(type: JsonDataTypes, value: Any){
+
+    func __str__() -> string {
+        match self.type with
+            case STRING ->
+                return "JsonString '{self.value}'";
+            case NUMBER ->
+                return "JsonNumber {value}";
+            case ARRAY ->
+                return "JsonArray {value}";
+            case OBJECT ->
+                return "JsonObject {value}";
+    }
+
+}

@@ -1,0 +1,132 @@
+
+import "classes.smr"
+
+class Parser(text: string){
+
+    var i = 0;
+
+    func __call__() -> JsonValue {
+        i = 0;
+        return value();
+    }
+
+    func value() {
+        if char() == "\"" then
+            return string();
+        elif isNumeric(char()) then
+            return number();
+        elif char() == "[" then
+            return array();
+        elif char() == "\{" then
+            return object();
+    }
+
+    func string() {
+        if char() != "\"" then {
+            println toASCII(char());
+            exit("string must start with \" and not '{char()}'");
+
+        }
+        proceed();
+        var string = "";
+        while char() != "\"" do { 
+            string += char();
+            proceed();
+            if char() == "EOF" then
+                exit("unterminated string");
+        }
+        proceed();
+        var value = JsonValue(STRING, string);
+        return value;
+    }
+
+    func number() {
+        var string = "";
+        while isNumeric(char()) do {
+            string += char();
+            proceed();
+        }
+        var number = num(string);
+        var value = JsonValue(NUMBER, number);
+        return value;
+    }
+
+    func array() {
+        proceed();
+        whitespace();
+        if char() == "]" then
+            return JsonValue(ARRAY, []);
+        var arr = [];
+        var val = value();
+        whitespace();
+        arr.add(val);
+        while char() != "]" do {
+            if char() != "," then
+                exit("expected ',' or ']' but got {char()}");
+            proceed();
+            whitespace();
+            var val = value();
+            arr.add(val);
+            whitespace();
+        }
+        proceed();
+        whitespace();
+        var value = JsonValue(ARRAY, arr);
+        return value;
+    }
+
+    func object() {
+
+        func key_value_pair(){
+            whitespace();
+            var key = string();
+            whitespace();
+            if char() != ":" then
+                exit("Expected ':' after object key {key} but got {char()}");
+            proceed();
+            whitespace();
+            var value = value();
+            whitespace();
+            return Pair(key, value);
+        }
+
+        proceed();
+        whitespace();
+        if char() == "}" then
+            return JsonValue(OBJECT, {});
+        var obj = {};
+        var pair = key_value_pair();
+        obj[pair.first] = pair.second;
+        while char() != "}" do {
+            if char() != "," then
+                exit("expected ',' or '}'");
+            proceed();
+            whitespace();
+            pair = key_value_pair();
+            obj[pair.first] = pair.second;
+        }
+        proceed();
+        whitespace();
+        return JsonValue(OBJECT, obj);
+    }
+
+    func char() -> string {
+        return text[i] if i < len(text) else "EOF";
+    }
+
+    func proceed(){
+        i += 1;
+    }
+
+    func whitespace() {
+        while char() == " " or char() == "\n" or char() == "\t" or char() == "\r" or char() == "\e" do {
+            proceed();
+        }
+    }
+}
+
+var test = read("test.txt");
+
+var parser = Parser(test);
+println parser();
+
