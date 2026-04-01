@@ -20,6 +20,10 @@ class JsonValue(type: JsonDataTypes, value: Any){
                 return "JsonArray {value}";
             case OBJECT ->
                 return "JsonObject {value}";
+            case BOOLEAN ->
+                return "JsonBoolean {value}";
+            case NULL ->
+                return "JsonNull {value}";
     }
 
 }

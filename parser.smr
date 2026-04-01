@@ -7,6 +7,7 @@ class Parser(text: string){
 
     func __call__() -> JsonValue {
         i = 0;
+        whitespace();
         return value();
     }
 
@@ -19,12 +20,30 @@ class Parser(text: string){
             return array();
         elif char() == "\{" then
             return object();
+        else {
+            var word = "";
+            while isAlphabetic(char()) do {
+                word += char();
+                proceed();
+            }
+            whitespace();
+            match word with
+                case "null" -> return JsonValue(BOOLEAN, nil);
+                case "true" -> return JsonValue(BOOLEAN, true);
+                case "false" -> return JsonValue(BOOLEAN, false);
+                else -> {
+                    for j in times(10) do
+                        print text[i+j];
+                    exit("'{char()}' is invalid char at i={i}");
+                } 
+        }
+        
     }
 
     func string() {
         if char() != "\"" then {
             println toASCII(char());
-            exit("string must start with \" and not '{char()}'");
+            exit("string must start with \" and not '{char()}' at i={i}");
 
         }
         proceed();
@@ -99,7 +118,7 @@ class Parser(text: string){
         obj[pair.first] = pair.second;
         while char() != "}" do {
             if char() != "," then
-                exit("expected ',' or '}'");
+                exit("expected ',' or '}' but got {char()} at i={i}");
             proceed();
             whitespace();
             pair = key_value_pair();
@@ -125,8 +144,8 @@ class Parser(text: string){
     }
 }
 
-var test = read("test.txt");
+var test = read("examples/wikipedia.json");
 
 var parser = Parser(test);
-println parser();
-
+var result =  parser();
+print result;
